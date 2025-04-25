@@ -1,19 +1,20 @@
 export const Colors = {
-  primary: '#4CAF50',
-  primaryLight: '#E8F5E9',
-  secondary: '#8D6E63',
-  secondaryLight: '#EFEBE9',
-  accent: '#03A9F4',
-  accentLight: '#E1F5FE',
-  success: '#4CAF50',
-  successLight: '#E8F5E9',
-  warning: '#FF9800',
-  warningLight: '#FFF3E0',
-  error: '#F44336',
-  errorLight: '#FFEBEE',
-  background: '#F5F8F5',
-  cardBackground: '#FFFFFF',
-  border: '#E0E0E0',
-  text: '#2C3E50',
-  textSecondary: '#7F8C8D',
+  primary: '#2e7d32',      // Dark green
+  primaryLight: '#e8f5e9', // Light green background
+  accent: '#ff8f00',       // Orange accent
+  accentLight: '#fff8e1',  // Light orange background
+  secondary: '#546e7a',    // Blueish gray
+  secondaryLight: '#eceff1', // Light gray background
+  success: '#2e7d32',      // Success green
+  successLight: '#e8f5e9', // Light success background
+  warning: '#f57c00',      // Warning orange
+  warningLight: '#fff3e0', // Light warning background
+  error: '#d32f2f',        // Error red
+  errorLight: '#ffebee',   // Light error background
+  text: '#263238',         // Dark text
+  textSecondary: '#607d8b', // Secondary text
+  border: '#e0e0e0',       // Border color
+  background: '#f8f9fa',   // Background color
+  white: '#ffffff',        // White
+  black: '#000000',        // Black
 };

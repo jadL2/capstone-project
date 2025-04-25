@@ -238,49 +238,53 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Decision Support Tools</Text>
 
         <View style={styles.toolsGrid}>
-          <Link href="/crop-management" asChild>
-            <TouchableOpacity style={styles.toolCard}>
-              <View style={[styles.toolIcon, { backgroundColor: Colors.primaryLight }]}>
-                <Seedling size={24} color={Colors.primary} />
-              </View>
-              <Text style={styles.toolTitle}>Crop Management</Text>
-              <Text style={styles.toolDescription}>Monitor and optimize crop lifecycle</Text>
-              <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
-            </TouchableOpacity>
-          </Link>
+          <View style={styles.toolRow}>
+            <Link href="/crop-management" asChild style={styles.toolLink}>
+              <TouchableOpacity style={styles.toolCard}>
+                <View style={[styles.toolIcon, { backgroundColor: Colors.primaryLight }]}>
+                  <Seedling size={24} color={Colors.primary} />
+                </View>
+                <Text style={styles.toolTitle}>Crop Management</Text>
+                <Text style={styles.toolDescription}>Monitor crops</Text>
+                <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
+              </TouchableOpacity>
+            </Link>
 
-          <Link href="/equipment-management" asChild>
-            <TouchableOpacity style={styles.toolCard}>
-              <View style={[styles.toolIcon, { backgroundColor: Colors.secondaryLight }]}>
-                <Tractor size={24} color={Colors.secondary} />
-              </View>
-              <Text style={styles.toolTitle}>Equipment</Text>
-              <Text style={styles.toolDescription}>Track & schedule maintenance</Text>
-              <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
-            </TouchableOpacity>
-          </Link>
+            <Link href="/equipment-management" asChild style={styles.toolLink}>
+              <TouchableOpacity style={styles.toolCard}>
+                <View style={[styles.toolIcon, { backgroundColor: Colors.secondaryLight }]}>
+                  <Tractor size={24} color={Colors.secondary} />
+                </View>
+                <Text style={styles.toolTitle}>Equipment</Text>
+                <Text style={styles.toolDescription}>Track maintenance</Text>
+                <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
+              </TouchableOpacity>
+            </Link>
+          </View>
+          
+          <View style={styles.toolRow}>
+            <Link href="/market-analysis" asChild style={styles.toolLink}>
+              <TouchableOpacity style={styles.toolCard}>
+                <View style={[styles.toolIcon, { backgroundColor: Colors.accentLight }]}>
+                  <BarChart3 size={24} color={Colors.accent} />
+                </View>
+                <Text style={styles.toolTitle}>Market Analysis</Text>
+                <Text style={styles.toolDescription}>Track prices</Text>
+                <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
+              </TouchableOpacity>
+            </Link>
 
-          <Link href="/market-analysis" asChild>
-            <TouchableOpacity style={styles.toolCard}>
-              <View style={[styles.toolIcon, { backgroundColor: Colors.accentLight }]}>
-                <BarChart3 size={24} color={Colors.accent} />
-              </View>
-              <Text style={styles.toolTitle}>Market Analysis</Text>
-              <Text style={styles.toolDescription}>Track prices & market trends</Text>
-              <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
-            </TouchableOpacity>
-          </Link>
-
-          <Link href="/business-plan" asChild>
-            <TouchableOpacity style={styles.toolCard}>
-              <View style={[styles.toolIcon, { backgroundColor: Colors.successLight }]}>
-                <FileText size={24} color={Colors.success} />
-              </View>
-              <Text style={styles.toolTitle}>Business Plan</Text>
-              <Text style={styles.toolDescription}>Create & manage plans</Text>
-              <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
-            </TouchableOpacity>
-          </Link>
+            <Link href="/business-plan" asChild style={styles.toolLink}>
+              <TouchableOpacity style={styles.toolCard}>
+                <View style={[styles.toolIcon, { backgroundColor: Colors.successLight }]}>
+                  <FileText size={24} color={Colors.success} />
+                </View>
+                <Text style={styles.toolTitle}>Business Plan</Text>
+                <Text style={styles.toolDescription}>Manage plans</Text>
+                <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
+              </TouchableOpacity>
+            </Link>
+          </View>
         </View>
 
         <Text style={styles.sectionTitle}>Recent Activity</Text>
@@ -446,17 +450,24 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 16,
   },
+  // Updated toolsGrid and toolCard styles
   toolsGrid: {
+    paddingHorizontal: 16,
+  },
+  toolRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 8,
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 16,
+  },
+  toolLink: {
+    width: '48%', // Take up nearly half the width of the container
   },
   toolCard: {
     backgroundColor: Colors.cardBackground,
     borderRadius: 12,
     padding: 16,
-    margin: 8,
-    width: '46%',
+    flex: 1,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -481,7 +492,8 @@ const styles = StyleSheet.create({
   toolDescription: {
     fontSize: 12,
     color: Colors.textSecondary,
-    lineHeight: 18,
+    lineHeight: 16, // Reduced from 18 to make it more compact
+    marginBottom: 16, // Add space at the bottom to prevent overlap with the chevron
   },
   chevron: {
     position: 'absolute',
