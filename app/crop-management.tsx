@@ -5,8 +5,7 @@ import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
-import axios from 'axios';
-import Constants from 'expo-constants';
+// Note: Removed axios import since we're using a mock API
 
 // Define types for user profile settings
 type Region = 'Meknes-Fes' | 'Souss-Massa' | 'Doukkala-Abda';
@@ -69,11 +68,8 @@ export default function CropManagementScreen() {
   });
   
   const [loading, setLoading] = useState(false);
-  const currentDate = new Date('2025-04-24'); // Using the given date
+  const currentDate = new Date('2025-04-25'); // Using the current date from user message
   const formattedCurrentDate = currentDate.toISOString().split('T')[0];
-
-  // API configuration from app.jsonhttps
-  const apiUrl = Constants.expoConfig?.extra?.cropPredictApiUrl || '://crop-predict-api.herokuapp.com/predict';
 
   // Sample crop data - would be from API in real app
   const [crops, setCrops] = useState<CropType[]>([
@@ -89,7 +85,7 @@ export default function CropManagementScreen() {
       notes: 'Good growth, needs regular monitoring for rust',
       lastWatered: '2025-04-22',
       lastFertilized: '2025-04-10',
-      imgUrl: 'will put one after',
+      imgUrl: 'https://images.unsplash.com/photo-1567958451986-2de427a4a0be',
       soilData: {
         N: 90,
         P: 42,
@@ -112,7 +108,7 @@ export default function CropManagementScreen() {
       notes: 'Trees are healthy, plan for pruning next month',
       lastWatered: '2025-04-20',
       lastFertilized: '2025-03-15',
-      imgUrl: 'will put one later',
+      imgUrl: 'https://images.unsplash.com/photo-1601010310979-f7a4fc24ff7c',
       soilData: {
         N: 78,
         P: 35,
@@ -135,7 +131,7 @@ export default function CropManagementScreen() {
       notes: 'Some leaf spots observed, monitoring closely',
       lastWatered: '2025-04-23',
       lastFertilized: '2025-04-15',
-      imgUrl: 'will put one later',
+      imgUrl: 'https://images.unsplash.com/photo-1592841200333-999585ba7346',
       soilData: {
         N: 115,
         P: 45,
@@ -179,48 +175,115 @@ export default function CropManagementScreen() {
   const [addCropModalVisible, setAddCropModalVisible] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState<CropType | null>(null);
 
-  // Get crop recommendation from API
+  // MOCK API - Get crop recommendation 
   const getCropRecommendation = async (soilData: SoilData) => {
     setCropPrediction({ loading: true, error: null, recommendation: null });
     
+    console.log('Mock API called with data:', soilData);
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     try {
-      console.log('Sending request to:', apiUrl);
-      console.log('With data:', soilData);
+      // Mock API logic for recommending crops based on soil data
+      let recommendation: string;
       
-      const response = await axios.post(apiUrl, soilData);
-      console.log('API response:', response.data);
+      // Determine crop based on soil and environmental parameters
+      // This is simplified logic based on agricultural conditions
       
-      // Handle successful response
-      if (response.data && response.data.recommended_crop) {
-        setCropPrediction({
-          loading: false,
-          error: null,
-          recommendation: response.data.recommended_crop
-        });
-        
-        // Show prediction result modal
-        setPredictModalVisible(false);
-        setPredictionResultModalVisible(true);
+      if (soilData.temperature > 25) {
+        if (soilData.humidity > 70) {
+          if (soilData.rainfall > 200) {
+            recommendation = "Rice";
+          } else {
+            recommendation = "Cotton";
+          }
+        } else {
+          if (soilData.K > 45) {
+            recommendation = "Papaya";
+          } else {
+            recommendation = "Chickpea";
+          }
+        }
+      } else if (soilData.temperature < 20) {
+        if (soilData.humidity > 65) {
+          recommendation = "Grapes";
+        } else {
+          recommendation = "Wheat";
+        }
       } else {
-        throw new Error('Invalid response from prediction API');
+        // Medium temperature (20-25°C)
+        if (soilData.N > 100) {
+          if (soilData.P > 50) {
+            recommendation = "Maize";
+          } else {
+            recommendation = "Barley";
+          }
+        } else if (soilData.K > 50) {
+          recommendation = "Pomegranate";
+        } else if (soilData.pH > 7) {
+          recommendation = "Lentil";
+        } else {
+          recommendation = "Millet";
+        }
       }
-    } catch (error) {
-      console.error('Error getting crop recommendation:', error);
+      
+      // For Moroccan conditions, prioritize these crops
+      if (soilData.pH > 7.5 && soilData.temperature > 22 && soilData.rainfall < 200) {
+        recommendation = "Olives";
+      }
+      
+      if (soilData.N > 90 && soilData.humidity < 60 && soilData.temperature > 20) {
+        recommendation = "Argan";
+      }
+      
+      console.log('Mock API recommendation:', recommendation);
+      
       setCropPrediction({
         loading: false,
-        error: 'Failed to get crop recommendation. Please try again.',
+        error: null,
+        recommendation: recommendation
+      });
+      
+      // Show prediction result modal
+      setPredictModalVisible(false);
+      setPredictionResultModalVisible(true);
+      
+    } catch (error) {
+      console.error('Error in mock API:', error);
+      setCropPrediction({
+        loading: false,
+        error: 'Failed to process soil data. Please try again.',
         recommendation: null
       });
       
-      // Show error message to user
-      Alert.alert('Prediction Error', 'Failed to get crop recommendation. Please check your internet connection and try again.');
+      Alert.alert('Prediction Error', 'Failed to analyze soil data. Please check your inputs and try again.');
     }
   };
 
   // Use crop prediction for planning
   const handlePredictionForPlanning = (crop: string) => {
-    Alert.alert('Success', `Added ${crop} to planning based on soil analysis.`);
+    // Create a new crop based on the prediction
+    const newCropData: Omit<CropType, 'id'> = {
+      name: crop,
+      variety: 'Recommended',
+      plantingDate: formattedCurrentDate,
+      harvestDate: '', // Would calculate based on crop type
+      status: 'Planning',
+      field: 'Choose field',
+      area: 0,
+      notes: 'Planning based on soil analysis prediction',
+      soilData: { ...soilDataForm }
+    };
+    
+    // Add the crop to the list
+    const id = (crops.length + 1).toString();
+    const cropToAdd = { id, ...newCropData };
+    setCrops([...crops, cropToAdd]);
+    
+    // Close modal and show confirmation
     setPredictionResultModalVisible(false);
+    Alert.alert('Success', `Added ${crop} to your crops based on soil analysis.`);
   };
 
   return (
