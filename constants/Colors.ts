@@ -1,20 +1,20 @@
 export const Colors = {
-  primary: '#2e7d32',      // Dark green
-  primaryLight: '#e8f5e9', // Light green background
-  accent: '#ff8f00',       // Orange accent
-  accentLight: '#fff8e1',  // Light orange background
-  secondary: '#546e7a',    // Blueish gray
-  secondaryLight: '#eceff1', // Light gray background
-  success: '#2e7d32',      // Success green
-  successLight: '#e8f5e9', // Light success background
-  warning: '#f57c00',      // Warning orange
-  warningLight: '#fff3e0', // Light warning background
-  error: '#d32f2f',        // Error red
-  errorLight: '#ffebee',   // Light error background
-  text: '#263238',         // Dark text
-  textSecondary: '#607d8b', // Secondary text
-  border: '#e0e0e0',       // Border color
-  background: '#f8f9fa',   // Background color
-  white: '#ffffff',        // White
-  black: '#000000',        // Black
+  primary: '#557b53', // A more muted green
+  accent: '#d18e3f', // Warmer orange accent color
+  success: '#5e9b5c', // Muted success green
+  background: '#f5f3ee', // Light beige background
+  card: '#eae7e0', // Beige card background
+  surface: '#e8e5de', // Slightly darker beige for surfaces
+  text: '#3a3a3a', // Dark grey text
+  textSecondary: '#5f5f5f', // Medium grey for secondary text
+  textLight: '#8a8a8a', // Light grey for subtle text
+  border: '#d9d4ca', // Beige/grey border color
+  statusBadge: '#dfe8df', // Light green badge
+  statusText: '#476b45', // Dark green status text
+  recommendedBackground: '#f5efe2', // Warm beige for recommended items
+  recommendedAccent: '#d18e3f', // Warm orange accent
+  recommendedText: '#9c622a', // Darker orange for text
+  infoBackground: '#e4e7e9', // Light grey info background
 };
+
+export default Colors;

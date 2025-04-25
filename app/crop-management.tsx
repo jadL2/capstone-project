@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 import { Colors } from '@/constants/Colors';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Picker } from '@react-native-picker/picker';
-// Note: Removed axios import since we're using a mock API
 
 // Define types for user profile settings
 type Region = 'Meknes-Fes' | 'Souss-Massa' | 'Doukkala-Abda';
@@ -41,6 +40,7 @@ type CropType = {
   lastFertilized?: string;
   imgUrl?: string;
   soilData?: SoilData;
+  isRecommended?: boolean; // New flag to highlight recommended crops
 };
 
 // Define activities
@@ -52,10 +52,31 @@ type Activity = {
   date: string;
   notes: string;
   completed: boolean;
+  isRecommended?: boolean; // New flag to highlight recommended activities
+};
+
+// Crop recommendation details by crop type
+type CropRecommendationDetails = {
+  [key: string]: {
+    varieties: string[];
+    growthDuration: number; // days
+    wateringFrequency: number; // days
+    fertilizingFrequency: number; // days
+    activities: Array<{
+      type: ActivityType;
+      dayOffset: number;
+      notes: string;
+    }>;
+    imageUrl?: string;
+  };
 };
 
 // Define the crop management screen component
 export default function CropManagementScreen() {
+  // Current date for planning
+  const currentDate = new Date('2025-04-25');
+  const formattedCurrentDate = currentDate.toISOString().split('T')[0];
+  
   // User profile settings
   const [userProfile, setUserProfile] = useState<{
     region: Region | null;
@@ -68,88 +89,184 @@ export default function CropManagementScreen() {
   });
   
   const [loading, setLoading] = useState(false);
-  const currentDate = new Date('2025-04-25'); // Using the current date from user message
-  const formattedCurrentDate = currentDate.toISOString().split('T')[0];
 
-  // Sample crop data - would be from API in real app
-  const [crops, setCrops] = useState<CropType[]>([
-    {
-      id: '1',
-      name: 'Wheat',
-      variety: 'Durum',
-      plantingDate: '2025-01-10',
-      harvestDate: '2025-06-15',
-      status: 'Growing',
-      field: 'Northern Field',
-      area: 5.2,
-      notes: 'Good growth, needs regular monitoring for rust',
-      lastWatered: '2025-04-22',
-      lastFertilized: '2025-04-10',
-      imgUrl: 'https://images.unsplash.com/photo-1567958451986-2de427a4a0be',
-      soilData: {
-        N: 90,
-        P: 42,
-        K: 43,
-        temperature: 22.8,
-        humidity: 82,
-        pH: 6.5,
-        rainfall: 210
-      }
+  // Crop recommendation information
+  const cropRecommendations: CropRecommendationDetails = {
+    'Rice': {
+      varieties: ['Basmati', 'Japonica'],
+      growthDuration: 120,
+      wateringFrequency: 3,
+      fertilizingFrequency: 14,
+      activities: [
+        { type: 'Watering', dayOffset: 3, notes: 'Keep soil saturated' },
+        { type: 'Fertilizing', dayOffset: 14, notes: 'NPK balanced fertilizer' },
+        { type: 'Pesticide', dayOffset: 30, notes: 'Check for stem borers' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1649000452626-b8cc53482507'
     },
-    {
-      id: '2',
-      name: 'Olives',
-      variety: 'Picholine Marocaine',
-      plantingDate: '2023-03-15',
-      harvestDate: '2025-11-20',
-      status: 'Growing',
-      field: 'Hillside Orchard',
-      area: 3.8,
-      notes: 'Trees are healthy, plan for pruning next month',
-      lastWatered: '2025-04-20',
-      lastFertilized: '2025-03-15',
-      imgUrl: 'https://images.unsplash.com/photo-1601010310979-f7a4fc24ff7c',
-      soilData: {
-        N: 78,
-        P: 35,
-        K: 60,
-        temperature: 25.5,
-        humidity: 60,
-        pH: 7.2,
-        rainfall: 150
-      }
+    'Wheat': {
+      varieties: ['Durum', 'Common'],
+      growthDuration: 160,
+      wateringFrequency: 7,
+      fertilizingFrequency: 21,
+      activities: [
+        { type: 'Watering', dayOffset: 7, notes: 'Moderate irrigation' },
+        { type: 'Fertilizing', dayOffset: 21, notes: 'Nitrogen-rich fertilizer' },
+        { type: 'Harvesting', dayOffset: 160, notes: 'Check grain hardness' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1567958451986-2de427a4a0be'
     },
-    {
-      id: '3',
-      name: 'Tomatoes',
-      variety: 'Roma',
-      plantingDate: '2025-02-20',
-      harvestDate: '2025-05-30',
-      status: 'Growing',
-      field: 'South Plot',
-      area: 1.2,
-      notes: 'Some leaf spots observed, monitoring closely',
-      lastWatered: '2025-04-23',
-      lastFertilized: '2025-04-15',
-      imgUrl: 'https://images.unsplash.com/photo-1592841200333-999585ba7346',
-      soilData: {
-        N: 115,
-        P: 45,
-        K: 50,
-        temperature: 26.7,
-        humidity: 75,
-        pH: 6.8,
-        rainfall: 180
-      }
-    }
-  ]);
+    'Cotton': {
+      varieties: ['Pima', 'Upland'],
+      growthDuration: 180,
+      wateringFrequency: 10,
+      fertilizingFrequency: 30,
+      activities: [
+        { type: 'Watering', dayOffset: 10, notes: 'Deep watering' },
+        { type: 'Fertilizing', dayOffset: 30, notes: 'Phosphorus-rich fertilizer' },
+        { type: 'Pesticide', dayOffset: 45, notes: 'Check for bollworms' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1533644635-2989b45ac8e6'
+    },
+    'Chickpea': {
+      varieties: ['Desi', 'Kabuli'],
+      growthDuration: 110,
+      wateringFrequency: 8,
+      fertilizingFrequency: 25,
+      activities: [
+        { type: 'Watering', dayOffset: 8, notes: 'Light irrigation' },
+        { type: 'Fertilizing', dayOffset: 25, notes: 'Low nitrogen fertilizer' },
+        { type: 'Harvesting', dayOffset: 110, notes: 'Harvest when pods are dry' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1515543904379-3d757afe72e4'
+    },
+    'Papaya': {
+      varieties: ['Red Lady', 'Sunrise'],
+      growthDuration: 280,
+      wateringFrequency: 5,
+      fertilizingFrequency: 30,
+      activities: [
+        { type: 'Watering', dayOffset: 5, notes: 'Regular watering' },
+        { type: 'Fertilizing', dayOffset: 30, notes: 'Balanced fertilizer' },
+        { type: 'Pruning', dayOffset: 90, notes: 'Remove lower leaves' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1526318472351-c75fcf070305'
+    },
+    'Grapes': {
+      varieties: ['Muscat', 'Syrah'],
+      growthDuration: 170,
+      wateringFrequency: 7,
+      fertilizingFrequency: 45,
+      activities: [
+        { type: 'Watering', dayOffset: 7, notes: 'Drip irrigation' },
+        { type: 'Pruning', dayOffset: 45, notes: 'Canopy management' },
+        { type: 'Pesticide', dayOffset: 60, notes: 'Check for powdery mildew' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1423483641154-5411ec9c0ddf'
+    },
+    'Maize': {
+      varieties: ['Sweet Corn', 'Field Corn'],
+      growthDuration: 100,
+      wateringFrequency: 7,
+      fertilizingFrequency: 21,
+      activities: [
+        { type: 'Watering', dayOffset: 7, notes: 'Regular watering' },
+        { type: 'Fertilizing', dayOffset: 21, notes: 'Nitrogen-rich fertilizer' },
+        { type: 'Harvesting', dayOffset: 100, notes: 'Check for kernel moisture' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1551806235-ed2c3c0a36f5'
+    },
+    'Barley': {
+      varieties: ['Two-row', 'Six-row'],
+      growthDuration: 120,
+      wateringFrequency: 10,
+      fertilizingFrequency: 28,
+      activities: [
+        { type: 'Watering', dayOffset: 10, notes: 'Moderate irrigation' },
+        { type: 'Fertilizing', dayOffset: 28, notes: 'Balanced fertilizer' },
+        { type: 'Harvesting', dayOffset: 120, notes: 'Harvest when golden color' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1564890369928-d3bbce94c8a6'
+    },
+    'Pomegranate': {
+      varieties: ['Wonderful', 'Mollar'],
+      growthDuration: 365, // perennial
+      wateringFrequency: 10,
+      fertilizingFrequency: 60,
+      activities: [
+        { type: 'Watering', dayOffset: 10, notes: 'Deep watering' },
+        { type: 'Pruning', dayOffset: 120, notes: 'Structural pruning' },
+        { type: 'Fertilizing', dayOffset: 60, notes: 'Potassium-rich fertilizer' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1572532916212-8a612253a3e2'
+    },
+    'Lentil': {
+      varieties: ['Green', 'Red'],
+      growthDuration: 100,
+      wateringFrequency: 10,
+      fertilizingFrequency: 30,
+      activities: [
+        { type: 'Watering', dayOffset: 10, notes: 'Light irrigation' },
+        { type: 'Fertilizing', dayOffset: 30, notes: 'Low nitrogen fertilizer' },
+        { type: 'Harvesting', dayOffset: 100, notes: 'Harvest when pods are dry' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1612257303423-d278940849ec'
+    },
+    'Millet': {
+      varieties: ['Pearl', 'Foxtail'],
+      growthDuration: 90,
+      wateringFrequency: 8,
+      fertilizingFrequency: 25,
+      activities: [
+        { type: 'Watering', dayOffset: 8, notes: 'Moderate watering' },
+        { type: 'Fertilizing', dayOffset: 25, notes: 'Balanced fertilizer' },
+        { type: 'Harvesting', dayOffset: 90, notes: 'Harvest when grains are firm' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1567416661073-2961786134ee'
+    },
+    'Olives': {
+      varieties: ['Picholine Marocaine', 'Arbequina'],
+      growthDuration: 365, // perennial
+      wateringFrequency: 14,
+      fertilizingFrequency: 90,
+      activities: [
+        { type: 'Watering', dayOffset: 14, notes: 'Deep watering' },
+        { type: 'Pruning', dayOffset: 180, notes: 'Remove suckers and thin canopy' },
+        { type: 'Fertilizing', dayOffset: 90, notes: 'Balanced fertilizer' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1601010310979-f7a4fc24ff7c'
+    },
+    'Argan': {
+      varieties: ['Indigenous', 'Traditional'],
+      growthDuration: 365, // perennial
+      wateringFrequency: 20,
+      fertilizingFrequency: 120,
+      activities: [
+        { type: 'Watering', dayOffset: 20, notes: 'Drought-resistant, minimal water' },
+        { type: 'Pruning', dayOffset: 200, notes: 'Light structural pruning' },
+        { type: 'Harvesting', dayOffset: 270, notes: 'Harvest mature fruits' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1652767435863-0401a770ef21'
+    },
+    'Tomatoes': {
+      varieties: ['Roma', 'Cherry'],
+      growthDuration: 80,
+      wateringFrequency: 3,
+      fertilizingFrequency: 14,
+      activities: [
+        { type: 'Watering', dayOffset: 3, notes: 'Regular watering' },
+        { type: 'Fertilizing', dayOffset: 14, notes: 'Balanced fertilizer' },
+        { type: 'Pruning', dayOffset: 30, notes: 'Remove suckers for indeterminate varieties' }
+      ],
+      imageUrl: 'https://images.unsplash.com/photo-1592841200333-999585ba7346'
+    },
+  };
 
-  // Activities/tasks for crops
-  const [activities, setActivities] = useState<Activity[]>([
-    { id: '1', cropId: '1', type: 'Watering', date: '2025-04-25', notes: 'Standard irrigation', completed: false },
-    { id: '2', cropId: '3', type: 'Fertilizing', date: '2025-04-27', notes: 'Use organic fertilizer', completed: false },
-    { id: '3', cropId: '2', type: 'Pruning', date: '2025-04-30', notes: 'Light pruning for better air circulation', completed: false },
-  ]);
+  // Initial empty state for crops
+  const [crops, setCrops] = useState<CropType[]>([]);
+  
+  // Initial empty state for activities
+  const [activities, setActivities] = useState<Activity[]>([]);
 
   // Crop prediction state
   const [cropPrediction, setCropPrediction] = useState<{ loading: boolean, error: string | null, recommendation: string | null }>({
@@ -174,6 +291,43 @@ export default function CropManagementScreen() {
   const [predictionResultModalVisible, setPredictionResultModalVisible] = useState(false);
   const [addCropModalVisible, setAddCropModalVisible] = useState(false);
   const [selectedCrop, setSelectedCrop] = useState<CropType | null>(null);
+  
+  // Function to calculate harvest date based on planting date and growth duration
+  const calculateHarvestDate = (plantingDate: string, growthDuration: number): string => {
+    const date = new Date(plantingDate);
+    date.setDate(date.getDate() + growthDuration);
+    return date.toISOString().split('T')[0];
+  };
+
+  // Function to generate activities for a crop based on recommendation
+  const generateActivitiesForCrop = (cropId: string, cropName: string, plantingDate: string): Activity[] => {
+    const cropInfo = cropRecommendations[cropName];
+    if (!cropInfo) return [];
+    
+    const newActivities: Activity[] = [];
+    const plantDate = new Date(plantingDate);
+    
+    // Generate activities based on crop requirements
+    cropInfo.activities.forEach((activity, index) => {
+      const activityDate = new Date(plantDate);
+      activityDate.setDate(activityDate.getDate() + activity.dayOffset);
+      
+      // Only add activities that are in the future or today
+      if (activityDate >= currentDate) {
+        newActivities.push({
+          id: `${cropId}-activity-${index}`,
+          cropId: cropId,
+          type: activity.type,
+          date: activityDate.toISOString().split('T')[0],
+          notes: activity.notes,
+          completed: false,
+          isRecommended: true
+        });
+      }
+    });
+    
+    return newActivities;
+  };
 
   // MOCK API - Get crop recommendation 
   const getCropRecommendation = async (soilData: SoilData) => {
@@ -261,29 +415,56 @@ export default function CropManagementScreen() {
     }
   };
 
-  // Use crop prediction for planning
-  const handlePredictionForPlanning = (crop: string) => {
-    // Create a new crop based on the prediction
-    const newCropData: Omit<CropType, 'id'> = {
-      name: crop,
-      variety: 'Recommended',
-      plantingDate: formattedCurrentDate,
-      harvestDate: '', // Would calculate based on crop type
-      status: 'Planning',
-      field: 'Choose field',
-      area: 0,
-      notes: 'Planning based on soil analysis prediction',
-      soilData: { ...soilDataForm }
-    };
-    
-    // Add the crop to the list
-    const id = (crops.length + 1).toString();
-    const cropToAdd = { id, ...newCropData };
-    setCrops([...crops, cropToAdd]);
-    
-    // Close modal and show confirmation
-    setPredictionResultModalVisible(false);
-    Alert.alert('Success', `Added ${crop} to your crops based on soil analysis.`);
+  // Function to replace all crops and activities with the recommended crop
+  const handlePredictionForPlanning = (cropName: string) => {
+    try {
+      // Get the crop recommendation details
+      const cropInfo = cropRecommendations[cropName];
+      if (!cropInfo) {
+        Alert.alert('Error', `No information available for ${cropName}`);
+        return;
+      }
+      
+      // Create a new ID for the crop
+      const newCropId = `recommended-${Date.now()}`;
+      
+      // Select a variety
+      const variety = cropInfo.varieties[0] || 'Standard';
+      
+      // Calculate harvest date based on growth duration
+      const harvestDate = calculateHarvestDate(formattedCurrentDate, cropInfo.growthDuration);
+      
+      // Create the new crop with the recommended flag
+      const newCrop: CropType = {
+        id: newCropId,
+        name: cropName,
+        variety: variety,
+        plantingDate: formattedCurrentDate,
+        harvestDate: harvestDate,
+        status: 'Planning',
+        field: 'Select field',
+        area: 5.0, // Default area
+        notes: `Recommended based on soil analysis (N:${soilDataForm.N}, P:${soilDataForm.P}, K:${soilDataForm.K}, pH:${soilDataForm.pH})`,
+        soilData: { ...soilDataForm },
+        imgUrl: cropInfo.imageUrl,
+        isRecommended: true
+      };
+      
+      // Generate activities for this crop
+      const newActivities = generateActivitiesForCrop(newCropId, cropName, formattedCurrentDate);
+      
+      // REPLACE all crops and activities (not just add)
+      setCrops([newCrop]);
+      setActivities(newActivities);
+      
+      // Close the modal and show success message
+      setPredictionResultModalVisible(false);
+      Alert.alert('Success', `Set ${cropName} as your recommended crop with ${newActivities.length} planned activities.`);
+      
+    } catch (error) {
+      console.error('Error adding recommended crop:', error);
+      Alert.alert('Error', 'Failed to set the recommended crop. Please try again.');
+    }
   };
 
   return (
@@ -330,62 +511,101 @@ export default function CropManagementScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Your Crops</Text>
           
-          {crops.map(crop => (
-            <TouchableOpacity 
-              key={crop.id} 
-              style={styles.cropCard}
-              onPress={() => {
-                setSelectedCrop(crop);
-                Alert.alert('Crop Selected', `You selected ${crop.name} (${crop.variety})`);
-              }}
-            >
-              <View style={styles.cropCardHeader}>
-                {crop.imgUrl ? (
-                  <Image 
-                    source={{ uri: crop.imgUrl }} 
-                    style={styles.cropThumbnail}
-                  />
-                ) : (
-                  <View style={[styles.cropThumbnail, styles.cropThumbnailPlaceholder]}>
-                    <Seedling size={24} color={Colors.primary} />
-                  </View>
-                )}
-                
-                <View style={styles.cropHeaderInfo}>
-                  <Text style={styles.cropName}>{crop.name}</Text>
-                  <Text style={styles.cropVariety}>{crop.variety}</Text>
-                  <View style={styles.cropInfoTags}>
-                    <View style={styles.statusBadge}>
-                      <Text style={styles.statusText}>{crop.status}</Text>
+          {crops.length === 0 ? (
+            <View style={styles.emptyCropMessage}>
+              <Seedling size={40} color="#cbd5e1" />
+              <Text style={styles.emptyStateText}>
+                No crops yet. Use "Predict Crop" to get a recommendation based on your soil data.
+              </Text>
+            </View>
+          ) : (
+            crops.map(crop => (
+              <TouchableOpacity 
+                key={crop.id} 
+                style={[styles.cropCard, crop.isRecommended && styles.recommendedCropCard]}
+                onPress={() => {
+                  setSelectedCrop(crop);
+                  Alert.alert('Crop Selected', `You selected ${crop.name} (${crop.variety})`);
+                }}
+              >
+                <View style={styles.cropCardHeader}>
+                  {crop.imgUrl ? (
+                    <Image 
+                      source={{ uri: crop.imgUrl }} 
+                      style={styles.cropThumbnail}
+                    />
+                  ) : (
+                    <View style={[styles.cropThumbnail, styles.cropThumbnailPlaceholder]}>
+                      <Seedling size={24} color={crop.isRecommended ? Colors.accent : Colors.primary} />
+                    </View>
+                  )}
+                  
+                  <View style={styles.cropHeaderInfo}>
+                    <View style={styles.cropNameContainer}>
+                      <Text style={styles.cropName}>{crop.name}</Text>
+                      {crop.isRecommended && (
+                        <View style={styles.recommendedBadge}>
+                          <Zap size={12} color="#ffffff" />
+                          <Text style={styles.recommendedText}>Recommended</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={styles.cropVariety}>{crop.variety}</Text>
+                    <View style={styles.cropInfoTags}>
+                      <View style={[styles.statusBadge, crop.isRecommended && styles.recommendedStatusBadge]}>
+                        <Text style={[styles.statusText, crop.isRecommended && styles.recommendedStatusText]}>
+                          {crop.status}
+                        </Text>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))
+          )}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Upcoming Activities</Text>
           
-          {activities.slice(0, 3).map(activity => {
-            const crop = crops.find(c => c.id === activity.cropId);
-            
-            return (
-              <View key={activity.id} style={styles.activityItem}>
-                <TouchableOpacity style={styles.activityCheckbox}>
-                  {activity.completed && <Check size={14} color="#fff" />}
-                </TouchableOpacity>
+          {activities.length === 0 ? (
+            <View style={styles.emptyActivityMessage}>
+              <Calendar size={40} color="#cbd5e1" />
+              <Text style={styles.emptyStateText}>
+                No activities scheduled. Add a crop or get a recommendation to generate activities.
+              </Text>
+            </View>
+          ) : (
+            activities
+              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) // Sort by date
+              .slice(0, 5) // Limit to 5 activities 
+              .map(activity => {
+                const crop = crops.find(c => c.id === activity.cropId);
                 
-                <View style={styles.activityContent}>
-                  <Text style={styles.activityTitle}>
-                    {activity.type}: {crop?.name}
-                  </Text>
-                  <Text style={styles.activityDate}>{activity.date}</Text>
-                </View>
-              </View>
-            );
-          })}
+                return (
+                  <View key={activity.id} style={[styles.activityItem, activity.isRecommended && styles.recommendedActivityItem]}>
+                    <TouchableOpacity style={styles.activityCheckbox}>
+                      {activity.completed && <Check size={14} color="#fff" />}
+                    </TouchableOpacity>
+                    
+                    <View style={styles.activityContent}>
+                      <View style={styles.activityTitleContainer}>
+                        <Text style={styles.activityTitle}>
+                          {activity.type}: {crop?.name}
+                        </Text>
+                        {activity.isRecommended && (
+                          <View style={styles.activityRecommendedBadge}>
+                            <Zap size={10} color="#ffffff" />
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.activityDate}>{activity.date}</Text>
+                      {activity.notes && <Text style={styles.activityNotes}>{activity.notes}</Text>}
+                    </View>
+                  </View>
+                );
+            })
+          )}
         </View>
       </ScrollView>
 
@@ -559,11 +779,15 @@ export default function CropManagementScreen() {
                     Based on your soil and environmental data, our AI model suggests that {cropPrediction.recommendation.toLowerCase()} would be suitable for your conditions.
                   </Text>
                   
+                  <Text style={styles.resultWarning}>
+                    Note: Setting this recommendation will replace your current crops and activities.
+                  </Text>
+                  
                   <TouchableOpacity
                     style={styles.usePredictionButton}
                     onPress={() => handlePredictionForPlanning(cropPrediction.recommendation!)}
                   >
-                    <Text style={styles.usePredictionButtonText}>Use This Recommendation</Text>
+                    <Text style={styles.usePredictionButtonText}>Set as My Crop</Text>
                   </TouchableOpacity>
                 </>
               ) : (
@@ -659,6 +883,39 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: '#263238',
   },
+  emptyCropMessage: {
+    backgroundColor: '#ffffff',
+    padding: 30,
+    borderRadius: 8,
+    marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  emptyActivityMessage: {
+    backgroundColor: '#ffffff',
+    padding: 30,
+    borderRadius: 8,
+    marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  emptyStateText: {
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginTop: 12,
+    fontSize: 14,
+    lineHeight: 20,
+  },
   cropCard: {
     backgroundColor: '#ffffff',
     padding: 16,
@@ -670,8 +927,19 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  recommendedCropCard: {
+    backgroundColor: '#fff8e1',
+    borderLeftWidth: 4,
+    borderLeftColor: '#ff8f00',
+  },
   cropCardHeader: {
     flexDirection: 'row',
+  },
+  cropNameContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    flexWrap: 'wrap',
   },
   cropThumbnail: {
     width: 50,
@@ -691,6 +959,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#263238',
+    marginRight: 8,
+  },
+  recommendedBadge: {
+    backgroundColor: '#ff8f00',
+    flexDirection: 'row',
+    paddingVertical: 2,
+    paddingHorizontal: 6,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  recommendedText: {
+    fontSize: 10,
+    color: '#ffffff',
+    marginLeft: 3,
+    fontWeight: 'bold',
   },
   cropVariety: {
     fontSize: 14,
@@ -707,10 +990,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     borderRadius: 12,
   },
+  recommendedStatusBadge: {
+    backgroundColor: '#fff8e1',
+  },
   statusText: {
     color: '#2e7d32',
     fontSize: 12,
     fontWeight: '500',
+  },
+  recommendedStatusText: {
+    color: '#e65100',
   },
   activityItem: {
     flexDirection: 'row',
@@ -725,6 +1014,11 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 1,
   },
+  recommendedActivityItem: {
+    backgroundColor: '#fff8e1',
+    borderLeftWidth: 3,
+    borderLeftColor: '#ff8f00',
+  },
   activityCheckbox: {
     width: 20,
     height: 20,
@@ -738,15 +1032,34 @@ const styles = StyleSheet.create({
   activityContent: {
     flex: 1,
   },
+  activityTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   activityTitle: {
     fontSize: 14,
     fontWeight: '500',
     color: '#263238',
   },
+  activityRecommendedBadge: {
+    backgroundColor: '#ff8f00',
+    borderRadius: 10,
+    width: 16,
+    height: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 6,
+  },
   activityDate: {
     fontSize: 12,
     color: '#607d8b',
     marginTop: 2,
+  },
+  activityNotes: {
+    fontSize: 11,
+    color: '#78909c',
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   // Modal styles
   modalOverlay: {
@@ -887,7 +1200,14 @@ const styles = StyleSheet.create({
     color: '#263238',
     textAlign: 'center',
     lineHeight: 21,
+    marginBottom: 10,
+  },
+  resultWarning: {
+    fontSize: 13,
+    color: '#d32f2f',
+    textAlign: 'center',
     marginBottom: 20,
+    fontStyle: 'italic',
   },
   usePredictionButton: {
     backgroundColor: '#ff8f00',
