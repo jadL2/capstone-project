@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Image, Platform } from 'react-native';
 import { Link } from 'expo-router';
-import { ChevronRight, Cloud, Sun, Tractor, Scaling as Seedling, ChartBar as BarChart3, FileText, User, Droplets, Wind, CloudRain } from 'lucide-react-native';
+import { ChevronRight, Cloud, Sun, Tractor, Scaling as Seedling, ChartBar as BarChart3, FileText, User, Droplets, Wind, CloudRain, Wheat } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import { Colors } from '@/constants/Colors';
 
@@ -263,13 +263,13 @@ export default function HomeScreen() {
           </View>
           
           <View style={styles.toolRow}>
-            <Link href="/market-analysis" asChild style={styles.toolLink}>
+            <Link href="/moroccan-production" asChild style={styles.toolLink}>
               <TouchableOpacity style={styles.toolCard}>
                 <View style={[styles.toolIcon, { backgroundColor: Colors.accentLight }]}>
-                  <BarChart3 size={24} color={Colors.accent} />
+                  <Wheat size={24} color={Colors.accent} />
                 </View>
-                <Text style={styles.toolTitle}>Market Analysis</Text>
-                <Text style={styles.toolDescription}>Track prices</Text>
+                <Text style={styles.toolTitle}>Moroccan Production</Text>
+                <Text style={styles.toolDescription}>USDA crop data</Text>
                 <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
               </TouchableOpacity>
             </Link>
