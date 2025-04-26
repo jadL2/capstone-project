@@ -244,8 +244,8 @@ export default function HomeScreen() {
                 <View style={[styles.toolIcon, { backgroundColor: Colors.primaryLight }]}>
                   <Seedling size={24} color={Colors.primary} />
                 </View>
-                <Text style={styles.toolTitle}>Crop Management</Text>
-                <Text style={styles.toolDescription}>Monitor crops</Text>
+                <Text style={styles.toolTitle}>Crop Prediction</Text>
+                <Text style={styles.toolDescription}>Recommend crops</Text>
                 <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
               </TouchableOpacity>
             </Link>
@@ -284,40 +284,6 @@ export default function HomeScreen() {
                 <ChevronRight size={20} color={Colors.textSecondary} style={styles.chevron} />
               </TouchableOpacity>
             </Link>
-          </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>Recent Activity</Text>
-
-        <View style={styles.activityList}>
-          <View style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: Colors.primaryLight }]}>
-              <Seedling size={20} color={Colors.primary} />
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Corn field irrigation</Text>
-              <Text style={styles.activityTime}>Today, 10:30 AM</Text>
-            </View>
-          </View>
-
-          <View style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: Colors.secondaryLight }]}>
-              <Tractor size={20} color={Colors.secondary} />
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Tractor maintenance scheduled</Text>
-              <Text style={styles.activityTime}>Yesterday, 3:15 PM</Text>
-            </View>
-          </View>
-
-          <View style={styles.activityItem}>
-            <View style={[styles.activityIcon, { backgroundColor: Colors.accentLight }]}>
-              <BarChart3 size={20} color={Colors.accent} />
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>Market price alert: Soybeans</Text>
-              <Text style={styles.activityTime}>Jun 15, 9:45 AM</Text>
-            </View>
           </View>
         </View>
       </ScrollView>
@@ -450,9 +416,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 16,
   },
-  // Updated toolsGrid and toolCard styles
   toolsGrid: {
     paddingHorizontal: 16,
+    marginBottom: 32, // Added bottom margin since we removed the Recent Activity section
   },
   toolRow: {
     flexDirection: 'row',
@@ -499,36 +465,5 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 16,
     right: 16,
-  },
-  activityList: {
-    marginHorizontal: 16,
-    marginBottom: 32,
-  },
-  activityItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  activityIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  activityContent: {
-    flex: 1,
-  },
-  activityTitle: {
-    fontSize: 16,
-    color: Colors.text,
-    marginBottom: 4,
-  },
-  activityTime: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
+  }
 });
