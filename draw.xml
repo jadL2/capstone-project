@@ -1,0 +1,60 @@
+<mxfile host="app.diagrams.net" modified="2025-05-06T00:20:00Z" agent="5.0">
+  <diagram id="sysArch" name="System Architecture">
+    <mxGraphModel dx="1000" dy="700" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <!-- Frontend -->
+        <mxCell id="2" value="FRONTEND
+• React Native
+• Axios
+• Expo Router
+• AsyncStorage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="20" y="20" width="180" height="120" as="geometry"/>
+        </mxCell>
+        <!-- Backend -->
+        <mxCell id="3" value="BACKEND (API)
+• NestJS
+• Express
+• Mongoose" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="260" y="20" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <!-- External Service -->
+        <mxCell id="4" value="EXTERNAL SERVICE
+• Open Weather Map
+• USDA API
+• Business Plan API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="500" y="20" width="200" height="100" as="geometry"/>
+        </mxCell>
+        <!-- Database -->
+        <mxCell id="5" value="DATABASE
+• MongoDB
+Collections:
+  – Users
+  – Crops
+  – Soil Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="260" y="160" width="220" height="140" as="geometry"/>
+        </mxCell>
+        <!-- Edges -->
+        <mxCell id="6" edge="1" source="2" target="3" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="6_label" value="HTTP/JSON" style="text;html=1;align=center;verticalAlign=middle;" vertex="1" parent="6">
+          <mxGeometry x="0.5" y="-0.5" relative="1" as="geometry" width="60" height="20"/>
+        </mxCell>
+        <mxCell id="7" edge="1" source="3" target="4" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="7_label" value="HTTP" style="text;html=1;align=center;verticalAlign=middle;" vertex="1" parent="7">
+          <mxGeometry x="0.5" y="-0.5" relative="1" as="geometry" width="40" height="20"/>
+        </mxCell>
+        <mxCell id="8" edge="1" source="3" target="5" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=block;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="8_label" value="Mongoose" style="text;html=1;align=center;verticalAlign=middle;" vertex="1" parent="8">
+          <mxGeometry x="0.5" y="0.5" relative="1" as="geometry" width="60" height="20"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
